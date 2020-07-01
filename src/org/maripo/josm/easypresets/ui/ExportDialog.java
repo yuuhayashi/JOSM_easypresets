@@ -26,6 +26,7 @@ import org.openstreetmap.josm.gui.MainApplication;
 import org.openstreetmap.josm.gui.tagging.presets.TaggingPreset;
 import org.openstreetmap.josm.tools.GBC;
 
+@SuppressWarnings({ "serial" })
 public class ExportDialog extends ExtendedDialog {
 
 	public ExportDialog () {

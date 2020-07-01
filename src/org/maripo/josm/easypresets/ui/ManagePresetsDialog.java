@@ -34,6 +34,7 @@ import org.openstreetmap.josm.tools.GBC;
 import org.openstreetmap.josm.tools.ImageProvider;
 import org.openstreetmap.josm.tools.ImageProvider.ImageSizes;
 
+@SuppressWarnings("serial")
 public class ManagePresetsDialog extends ExtendedDialog implements ListSelectionListener,
 	PresetEditorDialogListener {
 	private JButton editButton;

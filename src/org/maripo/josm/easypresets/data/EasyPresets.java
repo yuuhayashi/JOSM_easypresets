@@ -20,7 +20,6 @@ import javax.swing.JMenuItem;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
@@ -55,7 +54,8 @@ import org.xml.sax.SAXException;
  * @author maripo
  *
  */
-public class EasyPresets {
+@SuppressWarnings("serial")
+public class EasyPresets extends ArrayList<TaggingPreset> {
 	private static final String FILE_NAME = "EasyPresets.xml";
 	private static final String[] PRESET_FORMAT_URLS = {
 			"https://josm.openstreetmap.de/wiki/TaggingPresets",
@@ -85,7 +85,7 @@ public class EasyPresets {
 		return instance;
 	}
 
-	List<TaggingPreset> presets = new ArrayList<TaggingPreset>();
+	//List<TaggingPreset> presets = new ArrayList<TaggingPreset>();
 
 	/**
 	 * Load custom presets from local XML (if exists)
@@ -96,7 +96,7 @@ public class EasyPresets {
 			try (Reader reader = UTFInputStreamReader.create(new FileInputStream(file))) {
 				final Collection<TaggingPreset> readResult = TaggingPresetReader.readAll(reader, true);
 				if (readResult != null) {
-					presets.addAll(readResult);
+					this.addAll(readResult);
 				}
 				TaggingPresets.addTaggingPresets(readResult);
 			} catch (FileNotFoundException e) {
@@ -113,12 +113,13 @@ public class EasyPresets {
 	 * Add new tagging preset
 	 * @param preset
 	 */
-	public void add (TaggingPreset preset) {
-		presets.add(preset);
+	public boolean add (TaggingPreset preset) {
+		super.add(preset);
 		Collection<TaggingPreset> toAdd = new ArrayList<TaggingPreset>();
 		toAdd.add(preset);
 		// New preset will be able to find F3 menu
 		TaggingPresets.addTaggingPresets(toAdd);
+		return true;
 	}
 
 
@@ -127,14 +128,14 @@ public class EasyPresets {
 	 * @param file
 	 */
 	public void saveAllPresetsTo(File file) {
-		saveTo(presets, file);
+		saveTo(this, file);
 	}
 	/**
 	 * Save presets to specified file
 	 * @param presetsToSave
 	 * @param file
 	 */
-	public void saveTo(List<TaggingPreset> presetsToSave, File file) {
+	public void saveTo(List<TaggingPreset> selectedPresets, File file) {
 		try {
 			DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
 			DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
@@ -148,14 +149,13 @@ public class EasyPresets {
 			rootElement.setAttribute("shortdescription", "");
 			doc.appendChild(rootElement);
 			rootElement.appendChild(doc.createComment(getComment()));
-			for (TaggingPreset preset: presetsToSave) {
+			for (TaggingPreset preset: selectedPresets) {
 				Element presetElement = createpresetElement(doc, preset);
 				rootElement.appendChild(presetElement);
 			}
 
 			TransformerFactory transformerFactory = TransformerFactory.newInstance();
 			Transformer transformer = transformerFactory.newTransformer();
-			transformer.setOutputProperty(OutputKeys.INDENT, "yes");
 			transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
 			DOMSource source = new DOMSource(doc);
 			// Write to local XML
@@ -201,9 +201,9 @@ public class EasyPresets {
 	}
 	
 	private void updatePresetListMenu() {
-		group.setEnabled(presets.size()>0);
+		group.setEnabled(this.size()>0);
 		group.menu.removeAll();
-        for (TaggingPreset preset: presets) {
+        for (TaggingPreset preset: this) {
             JMenuItem mi = new JMenuItem(preset);
             mi.setText(preset.getLocaleName());
             group.menu.add(mi);
@@ -297,19 +297,19 @@ public class EasyPresets {
 	}
 
 	public TaggingPreset getLastItem() {
-		if (presets.size()==0) {
+		if (this.size()==0) {
 			return null;
 		}
-		Object[] objs = presets.toArray();
+		Object[] objs = this.toArray();
 		return (TaggingPreset)objs[objs.length-1];
 	}
 
 	public Collection<TaggingPreset> getPresets() {
-		return presets;
+		return this;
 	}
 
 	public void remove(TaggingPreset presetToRemove) {
-		presets.remove(presetToRemove);
+		this.remove(presetToRemove);
 	}
 
 	public void delete(TaggingPreset presetToDelete) {
@@ -324,11 +324,11 @@ public class EasyPresets {
 	 * @param index
 	 */
 	public void moveDown(int index) {
-		if (index >= presets.size()-1) {
+		if (index >= this.size()-1) {
 			return;
 		}
-		TaggingPreset presetToMove = presets.remove(index);
-		presets.add(index+1, presetToMove);
+		TaggingPreset presetToMove = this.remove(index);
+		this.add(index+1, presetToMove);
 		isDirty = true;
 	}
 
@@ -340,8 +340,8 @@ public class EasyPresets {
 		if (index <= 0) {
 			return;
 		}
-		TaggingPreset presetToMove = presets.remove(index);
-		presets.add(index-1, presetToMove);
+		TaggingPreset presetToMove = this.remove(index);
+		this.add(index-1, presetToMove);
 		isDirty = true;
 		
 	}
@@ -404,9 +404,9 @@ public class EasyPresets {
 	}
 
 	public TaggingPreset duplicate(TaggingPreset fromPreset) {
-		int index = presets.indexOf(fromPreset);
+		int index = this.indexOf(fromPreset);
 		TaggingPreset toPreset = clonePreset(fromPreset); 
-		presets.add(index+1, toPreset);
+		this.add(index+1, toPreset);
 		return toPreset;
 		
 	}
