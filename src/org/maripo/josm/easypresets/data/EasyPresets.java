@@ -309,7 +309,7 @@ public class EasyPresets extends ArrayList<TaggingPreset> {
 	}
 
 	public void remove(TaggingPreset presetToRemove) {
-		this.remove(presetToRemove);
+		super.remove(presetToRemove);
 	}
 
 	public void delete(TaggingPreset presetToDelete) {
